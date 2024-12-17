@@ -28,10 +28,15 @@ class ChangeRouteEvent {
   final ChangeRouteEventType type;
 }
 
+// Extends a ChangeNotifier, that holds a single value.
+// When value (line 49) is replaced with something that is not equal to the old value
+// as evaluated by the equality operator ==, this class notifies its listeners (line 65)
 class CurrentRouteNotifier extends ValueNotifier<ChangeRouteEvent?> {
   CurrentRouteNotifier() : super(null);
 }
 
+// Extends the default interface for observing the behavior of a Navigator
+// observables: didPush | didPop | didRemove | didReplace | didStartUserGesture | didStopUserGesture
 class AppNavigatorObserver extends NavigatorObserver {
   AppNavigatorObserver(this._routeNotifier);
 
@@ -40,6 +45,7 @@ class AppNavigatorObserver extends NavigatorObserver {
   @override
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didPop(route, previousRoute);
+    // Schedule a callback for the end of this frame
     SchedulerBinding.instance.addPostFrameCallback((Duration timestamp) {
       _routeNotifier.value =
           ChangeRouteEvent(route, previousRoute, ChangeRouteEventType.pop);
@@ -57,12 +63,17 @@ class SplashScreen extends StatelessWidget {
     final GlobalKey<NavigatorState> rootNavigatorKey =
         GlobalKey<NavigatorState>();
     final CurrentRouteNotifier routeNotifier = CurrentRouteNotifier();
+    // Creates a widget that maintains a stack-based history of child widgets.
     return Navigator(
       key: rootNavigatorKey,
+      // Called to generate a route for a given RouteSettings
+      // see https://api.flutter.dev/flutter/widgets/Navigator-class.html
+      // and https://api.flutter.dev/flutter/material/MaterialPageRoute-class.html
       onGenerateRoute: (RouteSettings settings) {
-        WidgetBuilder builder = (BuildContext context) => HomeScreen(
+        builder(BuildContext context) => HomeScreen(
               rootNavigatorKey: rootNavigatorKey,
             );
+        // A modal route that replaces the entire screen with a platform-adaptive transition.
         return MaterialPageRoute(builder: builder, settings: settings);
       },
       observers: <NavigatorObserver>[
@@ -84,12 +95,13 @@ class AppRoute<T> {
   )? routeBuilder;
 }
 
+// Creates a navigator, stores it, and exposes it to its descendants.
 class AppNavigator {
-  AppNavigator(this.rootNavigatorKey, this.bottomNavigationController);
+  AppNavigator(this.rootNavigatorKey);
 
   final GlobalKey<NavigatorState> rootNavigatorKey;
-  final BottomNavigationController bottomNavigationController;
 
+  // Obtain a value from the nearest ancestor provider of type AppNavigator
   static AppNavigator of(BuildContext context) {
     return context.read<AppNavigator>();
   }
@@ -133,12 +145,6 @@ class NavigationPageView {
   final WidgetBuilder builder;
 }
 
-abstract class BottomNavigationController {
-  void showFirst();
-  void showSecond();
-  void showThird();
-}
-
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.rootNavigatorKey});
   final GlobalKey<NavigatorState> rootNavigatorKey;
@@ -147,9 +153,9 @@ class HomeScreen extends StatefulWidget {
   HomeScreenState createState() => HomeScreenState();
 }
 
-class HomeScreenState extends State<HomeScreen>
-    implements BottomNavigationController {
+class HomeScreenState extends State<HomeScreen> {
   int _currentPageIndex = 0;
+
   final List<NavigationPageView> _pages = <NavigationPageView>[
     NavigationPageView(NavigationPage.first, 'One', (_) => const FirstScreen()),
     NavigationPageView(
@@ -159,55 +165,18 @@ class HomeScreenState extends State<HomeScreen>
   ];
 
   @override
-  void showFirst() {
-    final int pageIndex = _findPageById(NavigationPage.first);
-    if (pageIndex > -1) {
-      setState(() {
-        _currentPageIndex = pageIndex;
-      });
-    }
-  }
-
-  @override
-  void showSecond() {
-    final int pageIndex = _findPageById(NavigationPage.second);
-    if (pageIndex > -1) {
-      setState(() {
-        _currentPageIndex = pageIndex;
-      });
-    }
-  }
-
-  @override
-  void showThird() {
-    final int pageIndex = _findPageById(NavigationPage.third);
-    if (pageIndex > -1) {
-      setState(() {
-        _currentPageIndex = pageIndex;
-      });
-    }
-  }
-
-  int _findPageById(NavigationPage id) {
-    return _pages.indexWhere((NavigationPageView page) => page.id == id);
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Provider<BottomNavigationController>.value(
-        value: this,
-        child: Provider<AppNavigator>(
-          create: (BuildContext context) => AppNavigator(
-            widget.rootNavigatorKey,
-            this,
-          ),
-          child: TabSwitchingView(
-              currentTabIndex: _currentPageIndex,
-              tabNumber: _pages.length,
-              tabBuilder: (BuildContext context, int index) {
-                return _pages[index].builder(context);
-              }),
+      body: Provider<AppNavigator>(
+        // make AppNavigator  available to all descendants
+        // it can be accessed like so: AppNavigator.of(context).pop()/.push(...etc
+        create: (BuildContext context) => AppNavigator(widget.rootNavigatorKey),
+        child: TabSwitchingView(
+          currentTabIndex: _currentPageIndex,
+          tabNumber: _pages.length,
+          tabBuilder: (BuildContext context, int index) {
+            return _pages[index].builder(context);
+          },
         ),
       ),
       bottomNavigationBar: BottomNavigation(
@@ -215,6 +184,7 @@ class HomeScreenState extends State<HomeScreen>
           selectedIndex: _currentPageIndex,
           onItemSelected: (int position) {
             setState(() {
+              // make the bottom nav bar dirty and cause re-render of descendants
               _currentPageIndex = position;
             });
           }),
@@ -258,7 +228,7 @@ class BottomNavigationState extends State<BottomNavigation>
           return Flexible(
             child: GestureDetector(
               onTap: () => widget.onItemSelected(index),
-              child: _bottomNavigationItem(
+              child: _BottomNavigationItem(
                 item: item,
                 isSelected: index == widget.selectedIndex,
               ),
@@ -270,8 +240,8 @@ class BottomNavigationState extends State<BottomNavigation>
   }
 }
 
-class _bottomNavigationItem extends StatelessWidget {
-  const _bottomNavigationItem({required this.item, required this.isSelected});
+class _BottomNavigationItem extends StatelessWidget {
+  const _BottomNavigationItem({required this.item, required this.isSelected});
 
   final NavigationPageView item;
   final bool isSelected;
@@ -281,7 +251,7 @@ class _bottomNavigationItem extends StatelessWidget {
   }) =>
       TextStyle(
         color: textColor,
-        fontSize: 11,
+        fontSize: 20,
         fontWeight: FontWeight.w600,
         fontStyle: FontStyle.normal,
       );
@@ -289,31 +259,36 @@ class _bottomNavigationItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 58,
+      height: 40,
       decoration: const BoxDecoration(color: Colors.white),
       child: Stack(
         children: <Widget>[
           Align(
             alignment: Alignment.centerRight,
             child: Container(
-              height: 29,
+              height: 40,
               width: 1,
               decoration: const BoxDecoration(color: Colors.grey),
             ),
           ),
-          Container(
-            margin: const EdgeInsets.only(top: 8),
-            child: Column(
-              children: <Widget>[
-                Text(
-                  item.name,
-                  style: isSelected
-                      ? bottomMenuText()
-                      : bottomMenuText(textColor: Colors.grey),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                margin: const EdgeInsets.only(top: 8),
+                child: Column(
+                  children: <Widget>[
+                    Text(
+                      item.name,
+                      style: isSelected
+                          ? bottomMenuText()
+                          : bottomMenuText(textColor: Colors.grey),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            ],
+          )
         ],
       ),
     );

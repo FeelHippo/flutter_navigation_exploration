@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-// void main() => runApp(const NavigatorApp());
+void main() => runApp(const SimpleNavigatorApp());
 
 class SimpleNavigatorApp extends StatelessWidget {
   const SimpleNavigatorApp({super.key});
