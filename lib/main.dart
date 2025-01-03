@@ -52,7 +52,7 @@ class AppNavigatorObserver extends NavigatorObserver {
     });
   }
 
-  // ...
+// ...
 }
 
 class SplashScreen extends StatelessWidget {
@@ -88,6 +88,7 @@ class AppRoute<T> {
     this.name, {
     this.routeBuilder,
   });
+
   final String name;
   final Route<T>? Function(
     BuildContext context,
@@ -140,6 +141,7 @@ class NavigationPageView {
     this.name,
     this.builder,
   );
+
   final NavigationPage id;
   final String name;
   final WidgetBuilder builder;
@@ -147,6 +149,7 @@ class NavigationPageView {
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.rootNavigatorKey});
+
   final GlobalKey<NavigatorState> rootNavigatorKey;
 
   @override
