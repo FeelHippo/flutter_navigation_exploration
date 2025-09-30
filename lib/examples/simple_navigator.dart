@@ -23,9 +23,6 @@ class SimpleHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTextStyle(
-      /// Descendant widgets obtain the current theme's [ThemeData] object using
-      /// [Theme.of]. When a widget uses [Theme.of], it is automatically rebuilt if
-      /// the theme later changes, so that the changes can be applied.
       style: Theme.of(context).textTheme.headlineMedium!,
       child: GestureDetector(
         onTap: () {
@@ -121,7 +118,7 @@ class ChildPage extends StatelessWidget {
           case 'child/nested':
             // note how the below BuildContext is "contextNested"
             // hence, the callback "Navigator.of(context)"
-            // references the global context, from the enclosing build()
+            // references a new node created by WidgetBuilder
             builder = (BuildContext contextNested) => ChildGlobal(
                   callback: () {
                     Navigator.of(contextNested).pop();
