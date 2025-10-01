@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../navigator/service.dart';
 
 class FirstScreen extends StatelessWidget {
   const FirstScreen({super.key});
@@ -7,8 +10,13 @@ class FirstScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: Colors.red,
-      constraints: const BoxConstraints.expand(),
-      child: const Text("One"),
+      child: IconButton(
+        icon: const Icon(Icons.add),
+        iconSize: 64,
+        onPressed: () {
+          context.read<AppNavigator>().push(AppRoutes.toSecondScreen());
+        },
+      ),
     );
   }
 }
@@ -20,8 +28,13 @@ class SecondScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: Colors.green,
-      constraints: const BoxConstraints.expand(),
-      child: const Text("Two"),
+      child: IconButton(
+        icon: const Icon(Icons.add),
+        iconSize: 64,
+        onPressed: () {
+          context.read<AppNavigator>().push(AppRoutes.toThirdScreen());
+        },
+      ),
     );
   }
 }
@@ -33,8 +46,13 @@ class ThirdScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: Colors.blue,
-      constraints: const BoxConstraints.expand(),
-      child: const Text("Three"),
+      child: IconButton(
+        icon: const Icon(Icons.add),
+        iconSize: 64,
+        onPressed: () {
+          context.read<AppNavigator>().push(AppRoutes.toFirstScreen());
+        },
+      ),
     );
   }
 }

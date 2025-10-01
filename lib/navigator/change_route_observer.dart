@@ -13,17 +13,23 @@ class AppNavigatorObserver extends NavigatorObserver {
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didPop(route, previousRoute);
     SchedulerBinding.instance.addPostFrameCallback((Duration timestamp) {
-      _routeNotifier.value =
-          ChangeRouteEvent(route, previousRoute, ChangeRouteEventType.pop);
+      _routeNotifier.value = ChangeRouteEvent(
+        route,
+        previousRoute,
+        ChangeRouteEventType.pop,
+      );
     });
   }
 
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    super.didPop(route, previousRoute);
+    super.didPush(route, previousRoute);
     SchedulerBinding.instance.addPostFrameCallback((Duration timestamp) {
-      _routeNotifier.value =
-          ChangeRouteEvent(route, previousRoute, ChangeRouteEventType.push);
+      _routeNotifier.value = ChangeRouteEvent(
+        route,
+        previousRoute,
+        ChangeRouteEventType.push,
+      );
     });
   }
 }

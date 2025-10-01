@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:snippets/navigator/service.dart';
 
 import 'interface.dart';
 
@@ -10,7 +11,7 @@ class BottomNavigation extends StatefulWidget {
     this.selectedIndex = 0,
   });
 
-  final void Function(int position) onItemSelected;
+  final void Function(int position, AppRoute appRoute) onItemSelected;
   final List<NavigationPageView> items;
   final int selectedIndex;
 
@@ -24,18 +25,16 @@ class BottomNavigationState extends State<BottomNavigation>
   Widget build(BuildContext context) {
     return Container(
       height: 100,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        boxShadow: <BoxShadow>[
-          BoxShadow(offset: Offset(0, -2), color: Colors.white, blurRadius: 2),
-        ],
-      ),
+      decoration: const BoxDecoration(color: Colors.white),
       child: Row(
         children: widget.items.map((NavigationPageView item) {
           final int index = widget.items.indexOf(item);
           return Flexible(
             child: GestureDetector(
-              onTap: () => widget.onItemSelected(index),
+              onTap: () => widget.onItemSelected(
+                index,
+                AppRoutes.toSecondScreen(),
+              ), // TODO(Filippo): map item to AppRoutes's route
               child: Container(
                 height: 48,
                 decoration: const BoxDecoration(color: Colors.white),
@@ -45,7 +44,7 @@ class BottomNavigationState extends State<BottomNavigation>
                   children: [
                     Icon(
                       item.icon,
-                      size: 32,
+                      size: 40,
                       color: index == widget.selectedIndex
                           ? Colors.redAccent
                           : Colors.greenAccent,

@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum ChangeRouteEventType {
-  pop,
-  push,
-}
+enum ChangeRouteEventType { init, pop, push }
 
 class ChangeRouteEvent {
   ChangeRouteEvent(this.currentRoute, this.previousRoute, this.type);

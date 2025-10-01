@@ -14,9 +14,9 @@ class NavigatorApp extends StatelessWidget {
     return MaterialApp(
       home: NavigationWrapper(
         views: <NavigationPageView>[
-          NavigationPageView(Icons.home, (_) => const FirstScreen()),
-          NavigationPageView(Icons.search, (_) => const SecondScreen()),
-          NavigationPageView(Icons.account_box, (_) => const ThirdScreen()),
+          NavigationPageView(Icons.home, const FirstScreen()),
+          NavigationPageView(Icons.search, const SecondScreen()),
+          NavigationPageView(Icons.account_box, const ThirdScreen()),
         ],
       ),
     );
