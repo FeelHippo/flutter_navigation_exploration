@@ -1,18 +1,25 @@
-import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:snippets/presentation/screens.dart';
+import 'package:snippets/navigator/interface.dart';
+
+import 'change_route_notifier.dart';
 
 // Creates a navigator, stores it, and exposes it to its descendants.
 class AppNavigator {
-  AppNavigator(this.rootNavigatorKey);
+  AppNavigator({
+    required this.rootNavigatorKey,
+    required this.routeNotifier,
+    required this.views,
+  });
 
   final GlobalKey<NavigatorState> rootNavigatorKey;
+  final CurrentRouteNotifier routeNotifier;
+  final List<NavigationPageView> views;
 
-  void pop([dynamic result]) {
-    rootNavigatorKey.currentState?.pop(result);
+  void pop() {
+    rootNavigatorKey.currentState?.pop();
   }
 
-  Future<T?> push<T extends Object?>(AppRoute<T>? appRoute) async {
+  Future push(NavigationPageOrder next) async {
     final BuildContext? currentContext = rootNavigatorKey.currentContext;
     if (currentContext == null) {
       return null;
@@ -22,72 +29,26 @@ class AppNavigator {
       return null;
     }
 
-    if (appRoute != null) {
-      return currentState.push(appRoute.child);
-    }
-    return Future<T>.value();
+    routeNotifier.value = next;
+    final Widget childWidget = views
+        .firstWhere((route) => route.order == next)
+        .child;
+    return currentState.push(
+      PageRouteBuilder<void>(
+        opaque: false,
+        pageBuilder: (BuildContext context, _, _) {
+          return childWidget;
+        },
+        transitionsBuilder: (_, Animation<double> animation, _, Widget child) {
+          return FadeTransition(
+            opacity: animation,
+            child: RotationTransition(
+              turns: Tween<double>(begin: 0.5, end: 1.0).animate(animation),
+              child: child,
+            ),
+          );
+        },
+      ),
+    );
   }
-}
-
-abstract class AppRoutes {
-  static AppRoute<dynamic> toFirstScreen() => AppRoute<dynamic>(
-    PageRouteBuilder<void>(
-      opaque: false,
-      pageBuilder: (BuildContext context, _, _) {
-        return const FirstScreen();
-      },
-      transitionsBuilder: (_, Animation<double> animation, _, Widget child) {
-        return FadeTransition(
-          opacity: animation,
-          child: RotationTransition(
-            turns: Tween<double>(begin: 0.5, end: 1.0).animate(animation),
-            child: child,
-          ),
-        );
-      },
-    ),
-  );
-  static AppRoute<dynamic> toSecondScreen() => AppRoute<dynamic>(
-    PageRouteBuilder<void>(
-      opaque: false,
-      pageBuilder: (BuildContext context, _, _) {
-        return const SecondScreen();
-      },
-      transitionsBuilder: (_, Animation<double> animation, _, Widget child) {
-        return FadeTransition(
-          opacity: animation,
-          child: RotationTransition(
-            turns: Tween<double>(begin: 0.5, end: 1.0).animate(animation),
-            child: child,
-          ),
-        );
-      },
-    ),
-  );
-  static AppRoute<dynamic> toThirdScreen() => AppRoute<dynamic>(
-    PageRouteBuilder<void>(
-      opaque: false,
-      pageBuilder: (BuildContext context, _, _) {
-        return const ThirdScreen();
-      },
-      transitionsBuilder: (_, Animation<double> animation, _, Widget child) {
-        return FadeTransition(
-          opacity: animation,
-          child: RotationTransition(
-            turns: Tween<double>(begin: 0.5, end: 1.0).animate(animation),
-            child: child,
-          ),
-        );
-      },
-    ),
-  );
-}
-
-class AppRoute<T> extends Equatable {
-  const AppRoute(this.child);
-
-  final Route<T> child;
-
-  @override
-  List<Object?> get props => <Object?>[child];
 }

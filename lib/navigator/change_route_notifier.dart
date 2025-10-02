@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'change_route_event.dart';
+import 'interface.dart';
 
-class CurrentRouteNotifier extends ValueNotifier<ChangeRouteEvent?> {
-  CurrentRouteNotifier() : super(null);
+class CurrentRouteNotifier extends ValueNotifier<NavigationPageOrder> {
+  CurrentRouteNotifier() : super(NavigationPageOrder.first);
 }

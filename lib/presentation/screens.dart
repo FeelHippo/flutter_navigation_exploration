@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../navigator/interface.dart';
 import '../navigator/service.dart';
 
 class FirstScreen extends StatelessWidget {
@@ -14,7 +15,7 @@ class FirstScreen extends StatelessWidget {
         icon: const Icon(Icons.add),
         iconSize: 64,
         onPressed: () {
-          context.read<AppNavigator>().push(AppRoutes.toSecondScreen());
+          context.read<AppNavigator>().push(NavigationPageOrder.second);
         },
       ),
     );
@@ -32,7 +33,7 @@ class SecondScreen extends StatelessWidget {
         icon: const Icon(Icons.add),
         iconSize: 64,
         onPressed: () {
-          context.read<AppNavigator>().push(AppRoutes.toThirdScreen());
+          context.read<AppNavigator>().push(NavigationPageOrder.third);
         },
       ),
     );
@@ -50,7 +51,7 @@ class ThirdScreen extends StatelessWidget {
         icon: const Icon(Icons.add),
         iconSize: 64,
         onPressed: () {
-          context.read<AppNavigator>().push(AppRoutes.toFirstScreen());
+          context.read<AppNavigator>().push(NavigationPageOrder.first);
         },
       ),
     );

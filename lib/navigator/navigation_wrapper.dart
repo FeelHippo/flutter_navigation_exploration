@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:snippets/navigator/change_route_event.dart';
 import 'package:snippets/navigator/service.dart';
 
 import 'bottom_navigation_bar.dart';
 import 'change_route_notifier.dart';
-import 'change_route_observer.dart';
 import 'interface.dart';
 
 class NavigationWrapper extends StatefulWidget {
@@ -17,10 +15,14 @@ class NavigationWrapper extends StatefulWidget {
   State<StatefulWidget> createState() => NavigationWrapperState();
 }
 
-class NavigationWrapperState extends State<NavigationWrapper>
-    with ChangeNotifier {
-  int _currentPosition = 0;
-  final CurrentRouteNotifier _routeNotifier = CurrentRouteNotifier();
+class NavigationWrapperState extends State<NavigationWrapper> {
+  late CurrentRouteNotifier _routeNotifier;
+
+  @override
+  void initState() {
+    super.initState();
+    _routeNotifier = CurrentRouteNotifier();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,38 +30,39 @@ class NavigationWrapperState extends State<NavigationWrapper>
         GlobalKey<NavigatorState>();
     // Creates a widget that maintains a stack-based history of child widgets
     return Provider<AppNavigator>(
-      create: (_) => AppNavigator(rootNavigatorKey),
-      child: ValueListenableProvider<ChangeRouteEvent?>.value(
-        value: _routeNotifier,
-        child: Scaffold(
-          body: Navigator(
-            key: rootNavigatorKey,
-            pages: widget.views
-                .map<Page<dynamic>>(
-                  (view) => MaterialPage<void>(child: view.child),
-                )
-                .toList()
-                .reversed // ??
-                .toList(),
-            onGenerateRoute: (RouteSettings settings) {},
-            onDidRemovePage: (Page page) {},
-            observers: <NavigatorObserver>[
-              AppNavigatorObserver(_routeNotifier),
-            ],
-          ),
-          bottomNavigationBar: BottomNavigation(
-            items: widget.views,
-            selectedIndex: _currentPosition,
-            onItemSelected: (int position, AppRoute appRoute) {
-              setState(() {
-                _currentPosition = position;
-              });
-              // TODO(Filippo): try to use context.read<AppNavigator>().push(...) here
-              // make sure to hot restart the app when making changes
-            },
-          ),
-        ),
+      create: (_) => AppNavigator(
+        rootNavigatorKey: rootNavigatorKey,
+        routeNotifier: _routeNotifier,
+        views: widget.views,
       ),
+      builder: (BuildContext providerContext, _) {
+        return ValueListenableBuilder<NavigationPageOrder?>(
+          valueListenable: _routeNotifier,
+          builder: (BuildContext context, _, Widget? _) => Scaffold(
+            body: Navigator(
+              key: rootNavigatorKey,
+              pages: widget.views
+                  .map<Page<dynamic>>(
+                    (view) => MaterialPage<void>(child: view.child),
+                  )
+                  .toList()
+                  .reversed // ??
+                  .toList(),
+              onGenerateRoute: (RouteSettings settings) {
+                return null;
+              },
+              onDidRemovePage: (Page page) {},
+            ),
+            bottomNavigationBar: BottomNavigation(
+              routeNotifier: _routeNotifier,
+              items: widget.views,
+              onItemSelected: (NavigationPageOrder next) {
+                providerContext.read<AppNavigator>().push(next);
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 }
